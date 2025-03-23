@@ -1,0 +1,18 @@
+{
+  "env": {
+    "node": true,        // Enable Node.js global variables
+    "es2021": true       // Enable modern ES features
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-undef": "off",   // Prevent ESLint from flagging process as undefined
+    "no-unused-vars": "warn",
+    "no-console": "off"  // Allow using console.log
+  }
+}
