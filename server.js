@@ -69,6 +69,10 @@ app.use("/api/diary/daily-diary", dailyDiaryRoutes);
 app.use("/api/logos", logoRoutes);
 app.use("/api/mileage", authenticateJWT, mileageRoutes);
 
+app.get('/', (req,res) => {
+    res.send('Api is working')
+})
+
 
 
 
