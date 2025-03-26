@@ -65,7 +65,7 @@ app.use("/api/weekly", weeklyEntryRoutes);
 app.use("/api/reports", reports);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/diary/daily-diary", dailyDiaryRoutes);
-app.use("/api/jha", authenticateJWT, jobHazardRoutes);
+// app.use("/api/jha", authenticateJWT, jobHazardRoutes);
 app.use("/api/logos", logoRoutes);
 app.use("/api/mileage", authenticateJWT, mileageRoutes);
 
