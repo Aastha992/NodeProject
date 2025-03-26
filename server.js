@@ -176,7 +176,7 @@ app.get("/api/jha/fetch-job-hazard", authenticateJWT, async (req, res) => {
 
 
 // Start the server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });
