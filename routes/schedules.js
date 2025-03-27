@@ -119,6 +119,7 @@ router.get("/", async (req, res) => {
     try {
         const schedules = await Schedule.find().populate("projectId", "projectName projectNumber owner startDate endDate");
         res.json(schedules);
+        
     } catch (error) {
         console.error("Error fetching schedules:", error);
         res.status(500).json({ message: "Error fetching schedules" });
