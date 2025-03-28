@@ -32,6 +32,7 @@ const projectRoutes = require("./routes/projectsRoutes");
 const reports = require("./routes/weeklyReportsRoutes");
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const logoRoutes = require("./routes/logoRoutes");
+const s3Routes = require("./routes/s3Routes")
 
 //Connect mongo here.
 require("./config/db")();
@@ -68,6 +69,8 @@ app.use("/api/diary/daily-diary", dailyDiaryRoutes);
 // app.use("/api/jha", authenticateJWT, jobHazardRoutes);
 app.use("/api/logos", logoRoutes);
 app.use("/api/mileage", authenticateJWT, mileageRoutes);
+app.use("/api/upload", authenticateJWT, s3Routes);
+
 
 app.get('/', (req,res) => {
     res.send('Api is working')
