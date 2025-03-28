@@ -25,7 +25,7 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const dailyEntryRoutes = require("./routes/dailyEntryRoutes");
 const weeklyEntryRoutes = require("./routes/weeklyEntryRoutes");
 const dailyDiaryRoutes = require("./routes/dailyDiaryRoutes");
-const jobHazardRoutes = require("./routes/JobHazardRoutes");
+// const jobHazardRoutes = require("./routes/JobHazardRoutes");
 const photoFilesRoutes = require("./routes/PhotoFilesRoutes");
 const mileageRoutes = require("./routes/mileageRoutes");
 const projectRoutes = require("./routes/projectsRoutes");
@@ -65,9 +65,13 @@ app.use("/api/weekly", weeklyEntryRoutes);
 app.use("/api/reports", reports);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/diary/daily-diary", dailyDiaryRoutes);
-app.use("/api/jha", authenticateJWT, jobHazardRoutes);
+// app.use("/api/jha", authenticateJWT, jobHazardRoutes);
 app.use("/api/logos", logoRoutes);
 app.use("/api/mileage", authenticateJWT, mileageRoutes);
+
+app.get('/', (req,res) => {
+    res.send('Api is working')
+})
 
 
 
@@ -172,7 +176,7 @@ app.get("/api/jha/fetch-job-hazard", authenticateJWT, async (req, res) => {
 
 
 // Start the server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });
