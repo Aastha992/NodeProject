@@ -176,13 +176,6 @@ app.get("/api/jha/fetch-job-hazard", authenticateJWT, async (req, res) => {
       res.status(500).json({ message: "Error fetching data", error });
     }
   });
-
-
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server is running on http://0.0.0.0:${PORT}`);
-});
  
 
 // app.post("/expense", async (req, res) => {
@@ -415,3 +408,5 @@ app.listen(PORT, "0.0.0.0", () => {
 // 		});
 // 	}
 // });
+
+module.exports = app;
