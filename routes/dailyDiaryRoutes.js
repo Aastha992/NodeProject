@@ -33,7 +33,8 @@ router.post('/', async (req, res) => {
         description,
         userId,
         downloadPdf,
-        projectNumber
+        projectNumber,
+        IsChargable
     } = req.body;
 
     try {
@@ -58,6 +59,7 @@ router.post('/', async (req, res) => {
             existingDailyDiary.ownerContact = ownerContact;
             existingDailyDiary.description = description;
             existingDailyDiary.userId = userId;
+            existingDailyDiary.IsChargable = IsChargable;
             //ADD REPORT NUMBER
             existingDailyDiary.reportNumber = reportNumber
 
@@ -96,6 +98,7 @@ router.post('/', async (req, res) => {
                 ownerContact,
                 reportNumber,
                 description,
+                IsChargable,
                 userId
             });
             if (downloadPdf) {
