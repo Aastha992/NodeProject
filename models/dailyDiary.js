@@ -12,6 +12,7 @@ const DailyDiarySchema = new mongoose.Schema({
     contractor: { type: String, required: true },  // Contractor name
     ownerContact: { type: String, required: true },  // Owner contact info
     description: { type: String, required: true },  // Project description
+    IsChargable: {type: String, required: true},
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserDetails', required: true }
 }, { timestamps: true });
 
