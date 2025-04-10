@@ -6,32 +6,46 @@ const User = require('../models/UserDetails');
 const router = express.Router();
 const authenticateJWT = require("../utils/authenticateJWT");
 const common = require("../utils/common.util");
+const Email = require("../models/registeredEmail")
 
 // Registration route
 router.post('/register', async (req, res) => {
     const { email, password, username } = req.body;
 
     try {
-        // Check if email or username already exists
-        const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-        if (existingUser) {
-            return common.success(req, res, { message: 'Email or Username already exists' });
+        const regex = /^[a-zA-Z0-9._%+-]+@kps\.ca$/;
+        const isValidEmail = regex.test(email)
+        if (!isValidEmail) {
+            return common.error(req, res, { message: `${email} :- Invalid email. Only emails from the domain 'kpsw.ca' are allowed` });
         }
+        const checkCompanyEmail = await Email.findOne({ email: email }, { email: 1, _id: 0 })
+        if (checkCompanyEmail) {
+            const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+            if (existingUser) {
+                return common.success(req, res, { message: 'Email or Username already exists' });
+            }
+            // Hash the password
+            const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
+            // Create a new user
+            const newUser = await User.create({
+                email,
+                password: hashedPassword,
+                username,
+            });
+            const resp = newUser.toObject();
+            resp['userId'] = resp._id;
+            [resp.password, resp.__v, resp._id] = [];
+            // Respond with success
+            return common.success(req, res, { message: 'User registered successfully', data: resp });
 
-        // Create a new user
-        const newUser = await User.create({
-            email,
-            password: hashedPassword,
-            username,
-        });
-        const resp = newUser.toObject();
-        resp['userId'] = resp._id;
-        [resp.password, resp.__v, resp._id] = [];
-        // Respond with success
-        return common.success(req, res, { message: 'User registered successfully', data: resp });
+        } else {
+            return common.error(req, res, { message: `${email} :- this company email is not registered kindly contact to support team` });
+
+        }
+        // Check if email or username already exists
+
+
     } catch (error) {
         return common.error(req, res, { message: 'Server error' });
     }
@@ -63,40 +77,50 @@ router.post('/update-location', async (req, res) => {
 // Login route
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    console.log("Login request received:", req.body);
 
     try {
-        // Find the user by email
-        const user = await User.findOne({ email });
-        console.log("User data : ", user)
-        if (!user) {
-            console.log("User not found.")
-            return res.status(400).json({ message: 'Invalid email or password' });
+        const regex = /^[a-zA-Z0-9._%+-]+@kps\.ca$/;
+        const isValidEmail = regex.test(email)
+        if (!isValidEmail) {
+            return common.error(req, res, { message: `${email} :- Invalid email. Only emails from the domain 'kpsw.ca' are allowed` });
         }
+        const existingEmailVerifiedByCompany = await Email.findOne({ email: email }, { email: 1, _id: 0 })
 
-        // Compare password
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            console.log("Invalid password")
-            return res.status(400).json({ message: 'Invalid email or password' });
-        }
-
-        // Check if the logged-in user is Paul (the boss)
-        const isBoss = email === "paul.kusiar@kps.ca"; //Change to Paul's actual email
-
-        // Generate a JWT token
-        const token = jwt.sign({ userId: user._id, isBoss }, process.env.JWT_SECRET, { expiresIn: '24h' });
-
-        // Respond with the token and userId
-        res.status(200).json({
-            status: "success",
-            message: "User logged in successfully",
-            data: {
-                token: token,
-                userId: user._id,
-                isBoss: isBoss // Send this to frontend
+        if (existingEmailVerifiedByCompany) {
+            // Find the user by email
+            const user = await User.findOne({ email });
+            if (!user) {
+                console.log("User not found.")
+                return res.status(400).json({ message: 'Invalid email or password' });
             }
-        });
+
+            // Compare password
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: 'Invalid email or password' });
+            }
+
+            // Check if the logged-in user is Paul (the boss)
+            const isBoss = email === "paul.kusiar@kps.ca"; //Change to Paul's actual email
+
+            // Generate a JWT token
+            const token = jwt.sign({ userId: user._id, isBoss }, process.env.JWT_SECRET, { expiresIn: '24h' });
+
+            // Respond with the token and userId
+            res.status(200).json({
+                status: "success",
+                message: "User logged in successfully",
+                data: {
+                    token: token,
+                    userId: user._id,
+                    isBoss: isBoss // Send this to frontend
+                }
+            });
+
+        } else {
+            return res.status(400).json({ message: `${email} :- email is not verified by company` });
+        }
+
 
     } catch (error) {
         console.error("Error during login:", error);
@@ -220,6 +244,39 @@ router.get("/profile", authenticateJWT, async (req, res) => {
             latitude: user.latitude,
             longitude: user.longitude
         });
+    } catch (error) {
+        console.error("Error fetching user profile:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// for insert company email in database for validation in registeration time 
+
+router.post("/addCompanyEmail", authenticateJWT, async (req, res) => {
+    try {
+        let checkIsAdmin = req.user.isBoss
+        let { email, isActive } = req.body
+        if (checkIsAdmin) {
+            const regex = /^[a-zA-Z0-9._%+-]+@kps\.ca$/;
+            const isValidEmail = regex.test(email)
+            if (!isValidEmail) {
+                return common.error(req, res, { message: `${email} :- Invalid email. Only emails from the domain 'kpsw.ca' are allowed` });
+            }
+            const existingEmail = await Email.findOne({ email: email }, { email: 1, _id: 0 })
+            if (!existingEmail) {
+                let result = await Email.create({ email: email, isActive: isActive })
+                if (result) {
+                    res.status(200).json({ status: true, message: `${email} is registered successfully` })
+                } else {
+                    res.status(400).json({ status: false, message: `Failed to register ${email}` })
+                }
+
+            } else {
+                res.status(200).json({ status: false, message: `${email} is already exists` })
+            }
+        } else {
+            res.status(200).json({ status: false, message: `You do not have access to perform this operation!` })
+        }
     } catch (error) {
         console.error("Error fetching user profile:", error);
         res.status(500).json({ message: "Server error" });
