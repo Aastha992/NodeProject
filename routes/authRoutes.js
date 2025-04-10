@@ -16,7 +16,7 @@ router.post('/register', async (req, res) => {
         const regex = /^[a-zA-Z0-9._%+-]+@kps\.ca$/;
         const isValidEmail = regex.test(email)
         if (!isValidEmail) {
-            return common.error(req, res, { message: `${email} :- Invalid email. Only emails from the domain 'kpsw.ca' are allowed` });
+            return common.error(req, res, { message: `${email} :- Invalid email. Only emails from the domain 'kps.ca' are allowed` });
         }
         const checkCompanyEmail = await Email.findOne({ email: email }, { email: 1, _id: 0 })
         if (checkCompanyEmail) {
@@ -82,7 +82,7 @@ router.post('/login', async (req, res) => {
         const regex = /^[a-zA-Z0-9._%+-]+@kps\.ca$/;
         const isValidEmail = regex.test(email)
         if (!isValidEmail) {
-            return common.error(req, res, { message: `${email} :- Invalid email. Only emails from the domain 'kpsw.ca' are allowed` });
+            return common.error(req, res, { message: `${email} :- Invalid email. Only emails from the domain 'kps.ca' are allowed` });
         }
         const existingEmailVerifiedByCompany = await Email.findOne({ email: email }, { email: 1, _id: 0 })
 
@@ -260,7 +260,7 @@ router.post("/addCompanyEmail", authenticateJWT, async (req, res) => {
             const regex = /^[a-zA-Z0-9._%+-]+@kps\.ca$/;
             const isValidEmail = regex.test(email)
             if (!isValidEmail) {
-                return common.error(req, res, { message: `${email} :- Invalid email. Only emails from the domain 'kpsw.ca' are allowed` });
+                return common.error(req, res, { message: `${email} :- Invalid email. Only emails from the domain 'kps.ca' are allowed` });
             }
             const existingEmail = await Email.findOne({ email: email }, { email: 1, _id: 0 })
             if (!existingEmail) {
