@@ -6,6 +6,7 @@ const multer = require("multer");
 const { body, validationResult } = require('express-validator');
 const common = require("../utils/common.util");
 const fs = require("fs");
+const moment = require('moment')
 const path = require("path");
 
 const upload = multer({ storage: common.prepareStorage });
@@ -25,7 +26,7 @@ router.post(
 
     try {
       const imagePath = req.file.path;
-      const { location=  "Default", time = "2025-10-01 10:22:33" } = req.body;
+      const { location = "Default", time = "2025-10-01 10:22:33" } = req.body;
       let photo = path.join(__dirname, `../${imagePath}`);
 
       // Read the existing image file as a buffer
@@ -46,11 +47,11 @@ router.post(
 // Route to upload photo metadata along with image details
 router.post(
   "/photo-files",
-  // authenticateJWT,
+  authenticateJWT,
   [
     body("userId").notEmpty().withMessage("User ID is Required"),
-    body("projectId").notEmpty().withMessage("Project ID is Required"),
-    body("photo").notEmpty().withMessage("Photo is Required"),
+    // body("projectId").notEmpty().withMessage("Project ID is Required"),
+    body("imageurl").notEmpty().withMessage("imageurl is Required"),
     body("location").notEmpty().withMessage("Location is Required"),
     body("date").notEmpty().withMessage("Date is Required"),
     body("time").notEmpty().withMessage("Time is Required")
@@ -62,15 +63,21 @@ router.post(
       return common.validationError(req, res, { message: "Validation failed", validationObj: errors.array() })
     }
 
-    const { userId, projectId, photo, location, date, time, description = "" } = req.body;
+    const { userId, projectId, imageurl, location, date, time, description = "" } = req.body;
     try {
       try {
         await common.validateReferences({ projectId, userId });
       } catch (error) {
         return common.validationError(req, res, { message: error.message });
       }
-      const newPhoto = await PhotoFiles.create({ userId, photo, location, date, time, description, projectId });
-      return common.success(req, res, { data: newPhoto.toObject().photo, status: 201 });
+      let photo = path.basename(imageurl)
+      let folder_name = path.dirname(imageurl)
+      const newPhoto = await PhotoFiles.create({ userId, photo, location, date, folder_name, time, description, projectId });
+      let uploadedUrl = ''
+      if (newPhoto) {
+        uploadedUrl = `${process.env.Base_Url}/${newPhoto.folder_name}/${newPhoto.photo}`
+      }
+      return common.success(req, res, { data: uploadedUrl, status: 201 });
     } catch (error) {
       return common.error(req, res, { message: "Failed to save photo", status: 500, details: error });
     }
@@ -85,7 +92,19 @@ router.get("/photo-files/:userId", authenticateJWT, async (req, res) => {
   try {
     // Find all photos for the specified user
     const photos = await PhotoFiles.find({ userId });
-    return common.success(req, res, { data: photos, status: 200, message: "Photos fetched successfully" });
+    let result = []
+    if(photos && photos.length > 0){
+ 
+       result = photos.map((x) => {
+        const photoObj = x.toObject();
+        photoObj.file_url = `${process.env.Base_Url}/${photoObj.folder_name}/${photoObj.photo}`;
+        photoObj.createdAt = moment(photoObj.createdAt).format('DD-MMM-YYYY hh:mm:ss A')
+        photoObj.updatedAt = moment(photoObj.updatedAt).format('DD-MMM-YYYY hh:mm:ss A')
+        return photoObj;
+      });
+
+    }
+    return common.success(req, res, { data: result, status: 200, message: "Photos fetched successfully" });
   } catch (error) {
     return common.error(req, res, { message: "Failed to fetch photos", status: 500, details: error.message });
   }
