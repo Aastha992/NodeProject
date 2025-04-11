@@ -9,7 +9,7 @@ const PhotoFileSchema = new mongoose.Schema(
 		date: { type: String, required: true }, // Date the photo was taken
 		time: { type: String, required: true }, // Time the photo was taken
 		description: { type: String },
-		projectId : { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: true }
+		projectId : { type: mongoose.Schema.Types.ObjectId, ref: 'Project'}
 	},
 	{
 		collection: "PhotoFiles", // MongoDB collection name
