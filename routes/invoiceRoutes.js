@@ -295,9 +295,11 @@ router.post("/generateInvoiceExcel",authenticateJWT, async (req, res) => {
                 totalRow.font = { bold: true };
         
                 const buffer = await workbook.xlsx.writeBuffer();
-                res.setHeader('Content-Disposition', 'attachment; filename=Invoice_Summary.xlsx');
-                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                res.send(buffer);
+                let base64Excel = buffer.toString('base64')
+                res.status(200).json({status:true,message: 'Invoice excel' , result :base64Excel })
+                // res.setHeader('Content-Disposition', 'attachment; filename=Invoice_Summary.xlsx');
+                // res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                // res.send(buffer);
     
             }else{
                 res.status(200).json({status:true , message: `Data is not available`})
