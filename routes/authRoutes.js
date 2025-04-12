@@ -101,7 +101,7 @@ router.post('/login', async (req, res) => {
             }
 
             // Check if the logged-in user is Paul (the boss)
-            const isBoss = email === "paul.kusiar@kps.ca"; //Change to Paul's actual email
+            const isBoss = email === "paul.kusiar@kps.ca" || email === 'kanhaiya@kps.ca'; //Change to Paul's actual email
 
             // Generate a JWT token
             const token = jwt.sign({ userId: user._id, isBoss }, process.env.JWT_SECRET, { expiresIn: '24h' });
