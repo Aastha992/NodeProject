@@ -19,6 +19,7 @@ const InvoiceSchema = new mongoose.Schema({
     clientPOReferenceNumber: { type: String, default: "" },
     description: { type: String, required: true },
     userDetails: [UserInvoiceDetailsSchema],
+    totalBillableHours: {type: Number, required: true},
     subTotal: { type: Number, required: true },
     totalAmount: { type: Number, required: true },
     createdAt: { type: Date, default: Date.now },
