@@ -8,6 +8,7 @@ const common = require("../utils/common.util");
 const fs = require("fs");
 const moment = require('moment')
 const path = require("path");
+const {deleteAttachmentFromS3} = require("../config/genricFn/s3Fn")
 
 const upload = multer({ storage: common.prepareStorage });
 
@@ -93,13 +94,13 @@ router.get("/photo-files/:userId", authenticateJWT, async (req, res) => {
     // Find all photos for the specified user
     const photos = await PhotoFiles.find({ userId });
     let result = []
-    if(photos && photos.length > 0){
- 
-       result = photos.map((x) => {
+    if (photos && photos.length > 0) {
+
+      result = photos.map((x) => {
         const photoObj = x.toObject();
         photoObj.file_url = `${process.env.Base_Url}/${photoObj.folder_name}/${photoObj.photo}`;
-        photoObj.createdAt = moment(photoObj.createdAt).format('DD-MMM-YYYY hh:mm:ss A')
-        photoObj.updatedAt = moment(photoObj.updatedAt).format('DD-MMM-YYYY hh:mm:ss A')
+        photoObj.createdAt = moment(photoObj.createdAt).format('DD-MMM-YYYY hh:mm:ss')
+        photoObj.updatedAt = moment(photoObj.updatedAt).format('DD-MMM-YYYY hh:mm:ss')
         return photoObj;
       });
 
@@ -114,10 +115,10 @@ router.get("/photo-files/:userId", authenticateJWT, async (req, res) => {
 router.delete("/photo-files/:id", authenticateJWT, async (req, res) => {
   const { id } = req.params;
   try {
-    await deletePhotos(id)
+    let result = await deletePhotos(id)
     res.status(200).json({
-      status: "success",
-      message: "Photo deleted successfully",
+      status: result.status,
+      message: result.message,
     });
   } catch (error) {
     res.status(500).json({
@@ -129,12 +130,39 @@ router.delete("/photo-files/:id", authenticateJWT, async (req, res) => {
 });
 const deletePhotos = async (photoId) => {
   try {
-    await PhotoFiles.findByIdAndDelete(photoId);
+
+    const photoRecord = await PhotoFiles.findById(photoId);
+
+    if (!photoRecord) {
+      return { status: false, message: "Image doesn't exist" };
+    }
+
+    const dbDeleteResult = await PhotoFiles.findByIdAndDelete(photoId);
+    if (!dbDeleteResult) {
+      return { status: false, message: "Failed to delete image from database" };
+    }
+
+    let fileUrl = `${photoRecord.folder_name}/${photoRecord.photo}`
+
+    const s3DeleteResult = await deleteAttachmentFromS3(fileUrl);
+    if (!s3DeleteResult?.status) {
+      return { status: false, message: "Image deleted from DB, but failed to delete from S3" };
+    }
+
+    return {
+      status: true,
+      message: "Image successfully deleted from database and S3 bucket"
+    };
+
   } catch (error) {
-    console.error("Error deleting image", error);
-    throw error;
+    console.error("Error deleting image:", error);
+    return {
+      status: false,
+      message: `Server error: ${error.message}`
+    };
   }
-}
+};
+
 
 
 // new route for photo upload
