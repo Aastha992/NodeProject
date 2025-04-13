@@ -9,7 +9,7 @@ const mongoose = require("mongoose");
 
 
 
-router.post("/weekly-entry", async (req, res) => {
+router.post("/weekly-entry",authenticateJWT, async (req, res) => {
     const {
         projectId,
         startDate,
