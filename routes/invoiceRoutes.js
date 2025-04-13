@@ -81,13 +81,14 @@ router.post("/create-invoice",authenticateJWT, async (req, res) => {
         clientPOReferenceNumber,
         description,
         userDetails,  // Array of user details provided by frontend
+        totalBillableHours,
         subTotal,
         totalAmount
     } = req.body;
 
     // Validate required fields
     const missingFieldsResponse = common.checkMissingFields(
-        ["clientName", "fromDate", "toDate", "invoiceTo", "projectId", "description", "userDetails", "subTotal", "totalAmount"],
+        ["clientName", "fromDate", "toDate", "invoiceTo", "projectId", "description", "userDetails", "totalBillableHours","subTotal","totalAmount"],
         req.body,
         res
     );
@@ -109,7 +110,8 @@ router.post("/create-invoice",authenticateJWT, async (req, res) => {
             projectId,
             clientPOReferenceNumber,
             description,
-            userDetails,  // Save directly as provided by frontend
+            userDetails,
+            totalBillableHours,  // Save directly as provided by frontend
             subTotal,
             totalAmount
         });
@@ -125,6 +127,7 @@ router.post("/create-invoice",authenticateJWT, async (req, res) => {
         });
     }
 });
+
 
 router.post("/generateInvoiceExcel",authenticateJWT, async (req, res) => {
 
