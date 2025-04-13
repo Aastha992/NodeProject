@@ -21,10 +21,9 @@ const WeeklyEntrySchema = new mongoose.Schema(
         // References to Daily Entries and Daily Diaries
         dailyEntries: [{ type: mongoose.Schema.Types.ObjectId, ref: 'DailyEntry' }],
         dailyDiaries: [{ type: mongoose.Schema.Types.ObjectId, ref: 'DailyDiary' }],
-        
         // Optional field for storing uploaded images
-        images: [{ type: String }],
-		dayDetails: { type: Map, of: String },
+        images: [{"path": {type: String} }],
+        dayDetails: { type: Map, of: String },
         userId :  { type: mongoose.Schema.Types.ObjectId, ref: 'UserDetails', required: true },
         contractAdministrator: { type: String, default: "Not Assigned" },
         supportCA: { type: String, default: "Not Assigned" }
